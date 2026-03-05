@@ -341,10 +341,10 @@ packages:
     dependency: "direct main"
     description:
       name: loxia
-      sha256: "633b6daaaf171058969048e44c33501ca93c7b247207b5c99454c64fd5f56779"
+      sha256: fc2a0d1a1e2613cbc53ddb6113183f5da12c26acce2fdae44e535ae80e7d33b6
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.11"
+    version: "0.2.0"
   matcher:
     dependency: transitive
     description:
@@ -369,6 +369,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  mysql_client:
+    dependency: transitive
+    description:
+      name: mysql_client
+      sha256: "6a0fdcbe3e0721c637f97ad24649be2f70dbce2b21ede8f962910e640f753fc2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.27"
   nanoid2:
     dependency: transitive
     description:
@@ -549,10 +557,10 @@ packages:
     dependency: transitive
     description:
       name: sqlparser
-      sha256: "337e9997f7141ffdd054259128553c348635fa318f7ca492f07a4ab76f850d19"
+      sha256: b3fe18d3cae6aee84123fb73ab5dcc3b35fbe6c3607394ac49eb2aedaa789c46
       url: "https://pub.dev"
     source: hosted
-    version: "0.43.1"
+    version: "0.44.1"
   stack_trace:
     dependency: transitive
     description:
@@ -617,6 +625,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.15"
+  tuple:
+    dependency: transitive
+    description:
+      name: tuple
+      sha256: a97ce2013f240b2f3807bcbaf218765b6f301c3eff91092bcfa23a039e7dd151
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   typed_data:
     dependency: transitive
     description:
@@ -629,10 +645,10 @@ packages:
     dependency: transitive
     description:
       name: uuid
-      sha256: a11b666489b1954e01d992f3d601b1804a33937b5a8fe677bd26b8a9f96f96e8
+      sha256: "1fef9e8e11e2991bb773070d4656b7bd5d850967a2456cfc83cf47925ba79489"
       url: "https://pub.dev"
     source: hosted
-    version: "4.5.2"
+    version: "4.5.3"
   vm_service:
     dependency: transitive
     description:

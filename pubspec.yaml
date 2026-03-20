@@ -1,6 +1,6 @@
 name: serinus_loxia
 description: A Serinus plugin that integrates Loxia, a lightweight Dart ORM for Relational Databases, to provide seamless database interactions within Serinus applications.
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/avesbox/serinus_loxia
 documentation: https://serinus.app
 homepage: https://serinus.app

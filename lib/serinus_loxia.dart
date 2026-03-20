@@ -6,6 +6,9 @@ class LoxiaModule extends Module {
   /// The data source options used to configure the Loxia data source.
   final DataSourceOptions _options;
 
+  @override
+  bool get isGlobal => true;
+
   LoxiaModule._(this._options);
 
   /// Creates a LoxiaModule with an in-memory data source, using the provided entity descriptors.
@@ -63,7 +66,11 @@ class LoxiaModule extends Module {
     final ds = DataSource(_options);
     await ds.init();
     _GlobalRepositoriesRegistry.set(ds.repositories);
-    return DynamicModule(providers: [], exports: []);
+    return DynamicModule(providers: [
+      Provider.forValue<DataSource>(ds, asType: DataSource),
+    ], exports: [
+      Export.value<DataSource>()
+    ]);
   }
 }
 

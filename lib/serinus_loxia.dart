@@ -94,9 +94,13 @@ class LoxiaModule extends Module {
     _GlobalRepositoriesRegistry.set(ds.repositories, name: name);
     return DynamicModule(
       providers: [
-        Provider.forValue<DataSource>(ds, asType: DataSource, name: name),
+        Provider.forValue<DataSource>(
+          ds,
+          asType: DataSource,
+          name: name != 'default' ? name : null,
+        ),
       ],
-      exports: [Export.value<DataSource>(name)],
+      exports: [Export.value<DataSource>(name != 'default' ? name : null)],
     );
   }
 }

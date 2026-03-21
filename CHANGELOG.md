@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Remove name from default data source to allow it to be injected without specifying a name, while still allowing multiple named data sources to coexist.
+
 ## 1.0.3
 
 - Add possibility to define multiple Loxia data sources by specifying a name for each LoxiaModule instance. Repositories from different modules can be accessed by using the module name as a qualifier when injecting the repository.

@@ -35,6 +35,7 @@ class UserController extends Controller {
         'page': users.page,
         'pageSize': users.pageSize,
         'usersFull': usersFull.map((e) => e.toJson()).toList(),
+        'registeredModuleNames': LoxiaModule.registeredModuleNames.toList(),
       };
     });
     on(Route.post('/'), (RequestContext<Map<String, dynamic>> context) async {
@@ -49,12 +50,34 @@ class UserController extends Controller {
   }
 }
 
+class UserSecondaryController extends Controller {
+  UserSecondaryController() : super('/secondary') {
+    on(Route.get('/'), (context) async {
+      final repo = context.use<UserRepository>('secondary');
+      final users = await repo.findBy();
+      return {'users': users.map((e) => e.toJson()).toList()};
+    });
+  }
+}
+
+class UserSecondaryModule extends Module {
+  UserSecondaryModule()
+    : super(
+        imports: [
+          LoxiaModule.features(entities: [User], name: 'secondary'),
+        ],
+        controllers: [UserSecondaryController()],
+      );
+}
+
 class AppModule extends Module {
   AppModule()
     : super(
         imports: [
           LoxiaModule.inMemory(entities: [User.entity]),
+          LoxiaModule.inMemory(entities: [User.entity], name: 'secondary'),
           LoxiaModule.features(entities: [User]),
+          UserSecondaryModule()
         ],
         controllers: [UserController()],
       );

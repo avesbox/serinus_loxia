@@ -6,40 +6,44 @@ part of 'serinus_loxia.dart';
 // LoxiaEntityGenerator
 // **************************************************************************
 
-final EntityDescriptor<User, UserPartial> $UserEntityDescriptor =
-    EntityDescriptor(
-      entityType: User,
-      tableName: 'user',
-      columns: [
-        ColumnDescriptor(
-          name: 'id',
-          propertyName: 'id',
-          type: ColumnType.integer,
-          nullable: false,
-          unique: false,
-          isPrimaryKey: true,
-          autoIncrement: true,
-          uuid: false,
-        ),
-        ColumnDescriptor(
-          name: 'name',
-          propertyName: 'name',
-          type: ColumnType.text,
-          nullable: false,
-          unique: false,
-          isPrimaryKey: false,
-          autoIncrement: false,
-          uuid: false,
-        ),
-      ],
-      relations: const [],
-      fromRow: (row) =>
-          User(id: (row['id'] as int), name: (row['name'] as String)),
-      toRow: (e) => {'id': e.id, 'name': e.name},
-      fieldsContext: const UserFieldsContext(),
-      repositoryFactory: (EngineAdapter engine) => UserRepository(engine),
-      defaultSelect: () => UserSelect(),
-    );
+final EntityDescriptor<User, UserPartial> $UserEntityDescriptor = () {
+  $initUserJsonCodec();
+  return EntityDescriptor(
+    entityType: User,
+    tableName: 'user',
+    columns: [
+      ColumnDescriptor(
+        name: 'id',
+        propertyName: 'id',
+        type: ColumnType.integer,
+        nullable: false,
+        unique: false,
+        isPrimaryKey: true,
+        autoIncrement: true,
+        uuid: false,
+        isDeletedAt: false,
+      ),
+      ColumnDescriptor(
+        name: 'name',
+        propertyName: 'name',
+        type: ColumnType.text,
+        nullable: false,
+        unique: false,
+        isPrimaryKey: false,
+        autoIncrement: false,
+        uuid: false,
+        isDeletedAt: false,
+      ),
+    ],
+    relations: const [],
+    fromRow: (row) =>
+        User(id: (row['id'] as int), name: (row['name'] as String)),
+    toRow: (e) => {'id': e.id, 'name': e.name},
+    fieldsContext: const UserFieldsContext(),
+    repositoryFactory: (EngineAdapter engine) => UserRepository(engine),
+    defaultSelect: () => UserSelect(),
+  );
+}();
 
 class UserFieldsContext extends QueryFieldsContext<User> {
   const UserFieldsContext([super.runtimeContext, super.alias]);
@@ -78,6 +82,17 @@ class UserSelect extends SelectOptions<User, UserPartial> {
 
   @override
   bool get hasSelections => id || name || (relations?.hasSelections ?? false);
+
+  @override
+  SelectOptions<User, UserPartial> withRelations(
+    RelationsOptions<User, UserPartial>? relations,
+  ) {
+    return UserSelect(
+      id: id,
+      name: name,
+      relations: relations as UserRelations?,
+    );
+  }
 
   @override
   void collect(
@@ -125,16 +140,22 @@ class UserSelect extends SelectOptions<User, UserPartial> {
   String? get primaryKeyColumn => 'id';
 }
 
-class UserRelations {
+class UserRelations extends RelationsOptions<User, UserPartial> {
   const UserRelations();
 
+  @override
   bool get hasSelections => false;
 
+  @override
   void collect(
-    UserFieldsContext context,
+    QueryFieldsContext<User> context,
     List<SelectField> out, {
     String? path,
-  }) {}
+  }) {
+    if (context is! UserFieldsContext) {
+      throw ArgumentError('Expected UserFieldsContext for UserRelations');
+    }
+  }
 }
 
 class UserPartial extends PartialEntity<User> {
@@ -181,7 +202,7 @@ class UserPartial extends PartialEntity<User> {
 
   @override
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name};
+    return {if (id != null) 'id': id, if (name != null) 'name': name};
   }
 }
 
@@ -229,3 +250,33 @@ extension UserJson on User {
     return {'id': id, 'name': name};
   }
 }
+
+extension UserCodec on User {
+  Object? toEncodable() {
+    return toJson();
+  }
+
+  String toJsonString() {
+    return encodeJsonColumn(toJson()) as String;
+  }
+}
+
+extension UserPartialCodec on UserPartial {
+  Object? toEncodable() {
+    return toJson();
+  }
+
+  String toJsonString() {
+    return encodeJsonColumn(toJson()) as String;
+  }
+}
+
+var $isUserJsonCodecInitialized = false;
+void $initUserJsonCodec() {
+  if ($isUserJsonCodecInitialized) return;
+  EntityJsonRegistry.register<User>((value) => UserJson(value).toJson());
+  $isUserJsonCodecInitialized = true;
+}
+
+extension UserRepositoryExtensions
+    on EntityRepository<User, PartialEntity<User>> {}

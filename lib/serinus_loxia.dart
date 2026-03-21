@@ -6,14 +6,20 @@ class LoxiaModule extends Module {
   /// The data source options used to configure the Loxia data source.
   final DataSourceOptions _options;
 
-  @override
-  bool get isGlobal => true;
+  final String name;
 
-  LoxiaModule._(this._options);
+  @override
+  String get token => name != 'default' ? 'LoxiaModule_$name' : 'LoxiaModule';
+
+  static final Set<String> _registeredModuleNames = {};
+
+  static Set<String> get registeredModuleNames => _registeredModuleNames;
+
+  LoxiaModule._(this._options, {this.name = 'default'});
 
   /// Creates a LoxiaModule with an in-memory data source, using the provided entity descriptors.
-  factory LoxiaModule.inMemory({required List<EntityDescriptor> entities}) {
-    return LoxiaModule._(InMemoryDataSourceOptions(entities: entities));
+  factory LoxiaModule.inMemory({required List<EntityDescriptor> entities, String name = 'default'}) {
+    return LoxiaModule._(InMemoryDataSourceOptions(entities: entities), name: name);
   }
 
   /// Creates a LoxiaModule with a SQLite data source, using the provided path, entity descriptors, and optional migrations.
@@ -21,6 +27,7 @@ class LoxiaModule extends Module {
     required String path,
     required List<EntityDescriptor> entities,
     List<Migration>? migrations,
+    String name = 'default',
   }) {
     return LoxiaModule._(
       SqliteDataSourceOptions(
@@ -28,6 +35,7 @@ class LoxiaModule extends Module {
         entities: entities,
         migrations: migrations ?? [],
       ),
+      name: name,
     );
   }
 
@@ -41,6 +49,7 @@ class LoxiaModule extends Module {
     required List<EntityDescriptor> entities,
     ConnectionSettings? settings,
     List<Migration>? migrations,
+    String name = 'default',
   }) {
     return LoxiaModule._(
       PostgresDataSourceOptions.connect(
@@ -53,22 +62,28 @@ class LoxiaModule extends Module {
         migrations: migrations ?? [],
         settings: settings,
       ),
+      name: name,
     );
   }
 
   /// Registers a feature module exposing repositories for the given entities.
-  static LoxiaFeatureModule features({required List<Type> entities}) {
-    return LoxiaFeatureModule(entities);
+  static LoxiaFeatureModule features({required List<Type> entities, String name = 'default'}) {
+    return LoxiaFeatureModule(entities, name: name);
   }
 
   @override
   Future<DynamicModule> registerAsync(ApplicationConfig config) async {
     final ds = DataSource(_options);
     await ds.init();
-    _GlobalRepositoriesRegistry.set(ds.repositories);
+    if (_registeredModuleNames.contains(name)) {
+      throw Exception('A LoxiaModule with the name "$name" has already been registered. Please choose a unique name for each LoxiaModule.');
+    }
+    _registeredModuleNames.add(name);
+    print('Registered LoxiaModule with name: $name');
+    _GlobalRepositoriesRegistry.set(ds.repositories, name: name);
     return DynamicModule(
-      providers: [Provider.forValue<DataSource>(ds, asType: DataSource)],
-      exports: [Export.value<DataSource>()],
+      providers: [Provider.forValue<DataSource>(ds, asType: DataSource, name: name)],
+      exports: [Export.value<DataSource>(name)],
     );
   }
 }
@@ -78,34 +93,41 @@ class LoxiaFeatureModule extends Module {
   /// The list of entity types for which repositories should be exposed.
   final List<Type> _entities;
 
+  final String name;
+
+  @override
+  String get token => name != 'default' ? 'LoxiaFeatureModule_$name' : 'LoxiaFeatureModule';
+
   /// Creates a LoxiaFeatureModule that exposes repositories for the specified entities.
-  LoxiaFeatureModule(this._entities);
+  LoxiaFeatureModule(this._entities, {this.name = 'default'});
 
   @override
   Future<DynamicModule> registerAsync(ApplicationConfig config) async {
     final providers = <Provider>[];
     final exports = <Type>[];
     for (final entityType in _entities) {
-      final repository = _GlobalRepositoriesRegistry.get(entityType);
+      final repository = _GlobalRepositoriesRegistry.get(entityType, name: name);
       if (repository != null) {
         providers.add(
-          Provider.forValue(repository, asType: repository.runtimeType),
+          Provider.forValue(repository, asType: repository.runtimeType, name: name != 'default' ? name : null),
         );
-        exports.add(repository.runtimeType);
+        exports.add(Export(repository.runtimeType, name: name != 'default' ? name : null));
       }
     }
+    print('LoxiaFeatureModule "$name" exposing repositories for entities: ${_entities.map((e) => e.toString()).join(', ')} - Providers: ${providers.map((p) => p.toString()).join(', ')}');
     return DynamicModule(providers: providers, exports: exports);
   }
 }
 
 class _GlobalRepositoriesRegistry {
-  static final Map<Type, EntityRepository> _repositories = {};
+  static final Map<String, Map<Type, EntityRepository>> _repositories = {};
 
-  static void set(Map<Type, EntityRepository> repositories) {
-    _repositories.addAll(repositories);
+  static void set(Map<Type, EntityRepository> repositories, {String name = 'default'}) {
+    _repositories[name] = repositories;
+    print(_repositories.keys);
   }
-
-  static EntityRepository? get(Type entityType) {
-    return _repositories[entityType];
+  
+  static EntityRepository? get(Type entityType, {String name = 'default'}) {
+    return _repositories[name]?[entityType];
   }
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- Remove prints used for debugging purposes to clean up the console output.
+
 ## 1.0.4
 
 - Remove name from default data source to allow it to be injected without specifying a name, while still allowing multiple named data sources to coexist.

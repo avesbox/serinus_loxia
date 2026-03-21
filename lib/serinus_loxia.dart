@@ -9,6 +9,9 @@ class LoxiaModule extends Module {
   final String name;
 
   @override
+  bool get isGlobal => true;
+
+  @override
   String get token => name != 'default' ? 'LoxiaModule_$name' : 'LoxiaModule';
 
   static final Set<String> _registeredModuleNames = {};
@@ -90,7 +93,6 @@ class LoxiaModule extends Module {
       );
     }
     _registeredModuleNames.add(name);
-    print('Registered LoxiaModule with name: $name');
     _GlobalRepositoriesRegistry.set(ds.repositories, name: name);
     return DynamicModule(
       providers: [
@@ -141,9 +143,6 @@ class LoxiaFeatureModule extends Module {
         );
       }
     }
-    print(
-      'LoxiaFeatureModule "$name" exposing repositories for entities: ${_entities.map((e) => e.toString()).join(', ')} - Providers: ${providers.map((p) => p.toString()).join(', ')}',
-    );
     return DynamicModule(providers: providers, exports: exports);
   }
 }
@@ -156,7 +155,6 @@ class _GlobalRepositoriesRegistry {
     String name = 'default',
   }) {
     _repositories[name] = repositories;
-    print(_repositories.keys);
   }
 
   static EntityRepository? get(Type entityType, {String name = 'default'}) {

@@ -18,8 +18,14 @@ class LoxiaModule extends Module {
   LoxiaModule._(this._options, {this.name = 'default'});
 
   /// Creates a LoxiaModule with an in-memory data source, using the provided entity descriptors.
-  factory LoxiaModule.inMemory({required List<EntityDescriptor> entities, String name = 'default'}) {
-    return LoxiaModule._(InMemoryDataSourceOptions(entities: entities), name: name);
+  factory LoxiaModule.inMemory({
+    required List<EntityDescriptor> entities,
+    String name = 'default',
+  }) {
+    return LoxiaModule._(
+      InMemoryDataSourceOptions(entities: entities),
+      name: name,
+    );
   }
 
   /// Creates a LoxiaModule with a SQLite data source, using the provided path, entity descriptors, and optional migrations.
@@ -67,7 +73,10 @@ class LoxiaModule extends Module {
   }
 
   /// Registers a feature module exposing repositories for the given entities.
-  static LoxiaFeatureModule features({required List<Type> entities, String name = 'default'}) {
+  static LoxiaFeatureModule features({
+    required List<Type> entities,
+    String name = 'default',
+  }) {
     return LoxiaFeatureModule(entities, name: name);
   }
 
@@ -76,13 +85,17 @@ class LoxiaModule extends Module {
     final ds = DataSource(_options);
     await ds.init();
     if (_registeredModuleNames.contains(name)) {
-      throw Exception('A LoxiaModule with the name "$name" has already been registered. Please choose a unique name for each LoxiaModule.');
+      throw Exception(
+        'A LoxiaModule with the name "$name" has already been registered. Please choose a unique name for each LoxiaModule.',
+      );
     }
     _registeredModuleNames.add(name);
     print('Registered LoxiaModule with name: $name');
     _GlobalRepositoriesRegistry.set(ds.repositories, name: name);
     return DynamicModule(
-      providers: [Provider.forValue<DataSource>(ds, asType: DataSource, name: name)],
+      providers: [
+        Provider.forValue<DataSource>(ds, asType: DataSource, name: name),
+      ],
       exports: [Export.value<DataSource>(name)],
     );
   }
@@ -96,7 +109,8 @@ class LoxiaFeatureModule extends Module {
   final String name;
 
   @override
-  String get token => name != 'default' ? 'LoxiaFeatureModule_$name' : 'LoxiaFeatureModule';
+  String get token =>
+      name != 'default' ? 'LoxiaFeatureModule_$name' : 'LoxiaFeatureModule';
 
   /// Creates a LoxiaFeatureModule that exposes repositories for the specified entities.
   LoxiaFeatureModule(this._entities, {this.name = 'default'});
@@ -106,15 +120,26 @@ class LoxiaFeatureModule extends Module {
     final providers = <Provider>[];
     final exports = <Type>[];
     for (final entityType in _entities) {
-      final repository = _GlobalRepositoriesRegistry.get(entityType, name: name);
+      final repository = _GlobalRepositoriesRegistry.get(
+        entityType,
+        name: name,
+      );
       if (repository != null) {
         providers.add(
-          Provider.forValue(repository, asType: repository.runtimeType, name: name != 'default' ? name : null),
+          Provider.forValue(
+            repository,
+            asType: repository.runtimeType,
+            name: name != 'default' ? name : null,
+          ),
         );
-        exports.add(Export(repository.runtimeType, name: name != 'default' ? name : null));
+        exports.add(
+          Export(repository.runtimeType, name: name != 'default' ? name : null),
+        );
       }
     }
-    print('LoxiaFeatureModule "$name" exposing repositories for entities: ${_entities.map((e) => e.toString()).join(', ')} - Providers: ${providers.map((p) => p.toString()).join(', ')}');
+    print(
+      'LoxiaFeatureModule "$name" exposing repositories for entities: ${_entities.map((e) => e.toString()).join(', ')} - Providers: ${providers.map((p) => p.toString()).join(', ')}',
+    );
     return DynamicModule(providers: providers, exports: exports);
   }
 }
@@ -122,11 +147,14 @@ class LoxiaFeatureModule extends Module {
 class _GlobalRepositoriesRegistry {
   static final Map<String, Map<Type, EntityRepository>> _repositories = {};
 
-  static void set(Map<Type, EntityRepository> repositories, {String name = 'default'}) {
+  static void set(
+    Map<Type, EntityRepository> repositories, {
+    String name = 'default',
+  }) {
     _repositories[name] = repositories;
     print(_repositories.keys);
   }
-  
+
   static EntityRepository? get(Type entityType, {String name = 'default'}) {
     return _repositories[name]?[entityType];
   }

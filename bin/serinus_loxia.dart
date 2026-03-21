@@ -77,7 +77,7 @@ class AppModule extends Module {
           LoxiaModule.inMemory(entities: [User.entity]),
           LoxiaModule.inMemory(entities: [User.entity], name: 'secondary'),
           LoxiaModule.features(entities: [User]),
-          UserSecondaryModule()
+          UserSecondaryModule(),
         ],
         controllers: [UserController()],
       );
